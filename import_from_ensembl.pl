@@ -77,9 +77,9 @@ sub insert_into_tables{
 	my $get_gene_id = $dbh->prepare('SELECT gene_id FROM gene WHERE gene_stable_id = ?');
            $get_gene_id->bind_param(1, $gene_id);
 	   $get_gene_id->execute();
-	my $t_gene_id = $get_gene_id->fetchrow_array();
+	my $transcript_gene_id = $get_gene_id->fetchrow_array();
 	my $last_protein = $dbh->last_insert_id(undef, 'public', 'protein', 'protein_id');
-           $dbh->do('INSERT INTO transcript(gene_id, protein_id, transcript_stable_id, transcript_seq) VALUES(?,?,?,?)', undef, ($t_gene_id, $last_protein, $transcript_id, $transcript)) or die DBI::errstr;
+           $dbh->do('INSERT INTO transcript(gene_id, protein_id, transcript_stable_id, transcript_seq) VALUES(?,?,?,?)', undef, ($transcript_gene_id, $last_protein, $transcript_id, $transcript)) or die DBI::errstr;
 
         my $last_transcript_id = $dbh->last_insert_id(undef, 'public', 'transcript', 'transcript_id');       
       	my $exons = $data->get_all_Exons();
