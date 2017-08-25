@@ -54,7 +54,7 @@ while (my $row = <$read_file>){
     $fam_desc_index++;
     $family_id++;
     
-my @family_gene_ids = split /[,\n]/, $row;
+my @family_gene_ids = split /[,\n\s+]/, $row;
 my $last_insert_fam_id = $dbh->last_insert_id(undef, 'public', 'family', 'family_id');
         
     while (my $gene_ids = shift @family_gene_ids){
