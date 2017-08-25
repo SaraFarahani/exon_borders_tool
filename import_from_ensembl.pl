@@ -62,24 +62,24 @@ sub insert_into_tables{
 
         #Get and insert gene	
 	my $gene = $data->get_Gene();
-	my $gene_id = $gene->stable_id();
-	   $dbh->do('INSERT OR IGNORE INTO gene(specie_id, gene_stable_id) VALUES(?,?)', undef, ($last_specie_id, $gene_id)) or die DBI::errstr;
+	my $gene_stable_id = $gene->stable_id();
+	   $dbh->do('INSERT OR IGNORE INTO gene(specie_id, gene_stable_id) VALUES(?,?)', undef, ($last_specie_id, $gene_stable_id)) or die DBI::errstr;
 
 	#Get and insert protein
         my $protein = $data->translation();
-        my $protein_id = $protein->stable_id();
+        my $protein_stable_id = $protein->stable_id();
         my $protein_seq = $protein->seq();
-           $dbh->do('INSERT INTO protein(protein_stable_id, protein_seq) VALUES(?,?)', undef, ($protein_id, $protein_seq)) or die DBI::errstr;
+           $dbh->do('INSERT INTO protein(protein_stable_id, protein_seq) VALUES(?,?)', undef, ($protein_stable_id, $protein_seq)) or die DBI::errstr;
 
 	#Get and insert transcript
 	my $transcript = $data->seq()->seq();
-	my $transcript_id = $data->stable_id();
+	my $transcript_stable_id = $data->stable_id();
 	my $get_gene_id = $dbh->prepare('SELECT gene_id FROM gene WHERE gene_stable_id = ?');
-           $get_gene_id->bind_param(1, $gene_id);
+           $get_gene_id->bind_param(1, $gene_stable_id);
 	   $get_gene_id->execute();
 	my $transcript_gene_id = $get_gene_id->fetchrow_array();
-	my $last_protein = $dbh->last_insert_id(undef, 'public', 'protein', 'protein_id');
-           $dbh->do('INSERT INTO transcript(gene_id, protein_id, transcript_stable_id, transcript_seq) VALUES(?,?,?,?)', undef, ($transcript_gene_id, $last_protein, $transcript_id, $transcript)) or die DBI::errstr;
+	my $last_protein_id = $dbh->last_insert_id(undef, 'public', 'protein', 'protein_id');
+           $dbh->do('INSERT INTO transcript(gene_id, protein_id, transcript_stable_id, transcript_seq) VALUES(?,?,?,?)', undef, ($transcript_gene_id, $last_protein_id, $transcript_stable_id, $transcript)) or die DBI::errstr;
 
         my $last_transcript_id = $dbh->last_insert_id(undef, 'public', 'transcript', 'transcript_id');       
       	my $exons = $data->get_all_Exons();
