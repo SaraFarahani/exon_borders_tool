@@ -51,7 +51,7 @@ if ($lines ne $num_fam_desc){
 #Open the file again and reads it 
 my $read_file = path($filename)->openr_utf8;
 my$row_index=0;
-insert_into_database($read_file, $row_index);
+insert_into_database();
 
 
 #Inserts the records into the database
