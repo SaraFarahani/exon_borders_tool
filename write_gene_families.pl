@@ -4,11 +4,11 @@ use strict;
 use DBI;
 use Path::Tiny;
 
-
+#USER: write your <database>.db here
+my $database = "";
 
 #Connect to SQLite database
 my $driver   = "SQLite";
-my $database = "test.db";
 my $dsn = "DBI:$driver:dbname=$database";
 my $userid = "";
 my $password = "";
@@ -17,83 +17,131 @@ my $dbh = DBI->connect($dsn, $userid, $password, {RaiseError => 1 }) or die $DBI
 print "Opened database successfully\n";
 
 
-
-#Write the path and file name to the output file
-my $dir = path("C:/Users/Sara/home/src");
-my $file = $dir->child("file.txt");
+#USER: write the <filename>.txt of the outputfile
+my $output_file=""; 
+my $dir=Path::Tiny->cwd;
+my $file = $dir->child($output_file);
 my $file_handle = $file->openw_utf8();
 
 
-#Write the family stable ids that should be included in the output file. Afterwards, the code systematically retrieves records from the database and builds the FASTA format text file.
+#USER: write the family stable ids that should be included in the output file in the array. 
+my @choose_families = ("");
+main();
 
-my @choose_families = ("FAM1", "FAM2");
+#Prints the output file
+sub main{
+    while (my $family_stable_id = shift @choose_families){
+	my $family_id = get_family_id($family_stable_id);
+	my @gene_ids = get_gene_ids($family_id);
 
-while (my $family_stable_id = shift @choose_families){
-    
-#Get family id records
-    my $get_family_id = $dbh->prepare('SELECT family_id FROM family WHERE family_stable_id = ?');
-       $get_family_id->bind_param(1, $family_stable_id);
-       $get_family_id->execute();
-    my $family_id = $get_family_id->fetchrow_array(); 
-    
+	while (my $gene_id = shift @gene_ids){
+	    my $gene_stable_id = get_gene_stable_id($gene_id);
+	    my @transcript_stable_ids = get_transcript_stable_id($gene_id);
 
-#Get gene records
-   my $get_gene_id = $dbh->prepare('SELECT gene_id FROM gene_family WHERE family_id = ?');
-      $get_gene_id->bind_param(1, $family_id);
-      $get_gene_id->execute();
-   
-    while (my $gene_id = $get_gene_id->fetchrow_array()){
-	my $get_gene_stable_id = $dbh->prepare('SELECT gene_stable_id FROM gene WHERE gene_id = ?');
-	   $get_gene_stable_id->bind_param(1, $gene_id);
-           $get_gene_stable_id->execute();
-	
-	while (my $gene_stable_id = $get_gene_stable_id->fetchrow_array()){
-	   
-	    
-#Get transcript records and start writing to file
-	    my $get_transcript_stable_id = $dbh->prepare('SELECT transcript_stable_id FROM transcript WHERE gene_id= ?');    
-               $get_transcript_stable_id->bind_param(1, $gene_id);
-               $get_transcript_stable_id->execute();
-	    
-	    while (my $transcript_stable_id =$get_transcript_stable_id->fetchrow_array()){   
-		$file_handle->print(">", $family_stable_id, "|", $gene_stable_id, "|", $transcript_stable_id, "|");	
-		my $get_transcript_seq = $dbh->prepare('SELECT transcript_seq FROM transcript WHERE transcript_stable_id = ?');
-		   $get_transcript_seq->bind_param(1, $transcript_stable_id);
-		   $get_transcript_seq->execute();
-		my $transcript_seq = $get_transcript_seq->fetchrow_array();
+	    while (my $transcript_stable_id = shift @transcript_stable_ids){
+		$file_handle->print(">", $family_stable_id, "|", $gene_stable_id, "|", $transcript_stable_id, "|");
+		my $transcript_seq = get_transcript_seq($transcript_stable_id);
+		my $transcript_id = get_transcript_id($transcript_stable_id);
+		my @exon_ids = get_exon_ids($transcript_id);
 
-		my $get_transcript_id = $dbh->prepare('SELECT transcript_id FROM transcript WHERE transcript_stable_id = ?');
-		   $get_transcript_id->bind_param(1, $transcript_stable_id);
-		   $get_transcript_id->execute();
-		my $transcript_id = $get_transcript_id->fetchrow_array();
-
-		
-#Get exon records and write to file
-		my $get_exon_id = $dbh->prepare('SELECT exon_id FROM transcript_exon WHERE transcript_id = ?');
-		   $get_exon_id->bind_param(1, $transcript_id);
-		   $get_exon_id->execute();
-		
-		while (my $exon_id = $get_exon_id->fetchrow_array()){
-	
-		    my $get_exon_start = $dbh->prepare('SELECT exon_start FROM exon WHERE exon_id = ?');
-		       $get_exon_start->bind_param(1, $exon_id);
-		       $get_exon_start->execute();
-		    my $exon_start = $get_exon_start->fetchrow_array();
-	
-       
-		    my $get_exon_end = $dbh->prepare('SELECT exon_end FROM exon WHERE exon_id = ?');
-		       $get_exon_end->bind_param(1, $exon_id);
-		       $get_exon_end->execute();
-		    my $exon_end = $get_exon_end->fetchrow_array();
-	
+		while (my $exon_id = shift @exon_ids){
+		    my $exon_start = get_exon_start($exon_id);
+		    my $exon_end = get_exon_end($exon_id);
 		    $file_handle->print($exon_start, ";", $exon_end, ";");
-	
-	
-	}
-
-		$file_handle->print("\n", $transcript_seq, "\n");
 		}
+		$file_handle->print("\n", $transcript_seq, "\n");
+	    }
+	}
     }
 }
+
+
+#Returns a scalar of the family id, needs a family stable id as input
+sub get_family_id{
+    my $family_stable_id = shift;
+    my @family_array = ("family_id", "family", "family_stable_id", $family_stable_id, "true");
+    return my $family_id = get_data(\@family_array);
 }
-  
+
+#Returns an array of gene ids, needs a family id as input.
+sub get_gene_ids{
+    my $family_id = shift;
+    my @gene_array = ("gene_id", "gene_family", "family_id", $family_id, "false");
+    return my @gene_ids = get_data(\@gene_array);   
+}
+
+#Returns a scalar of the gene stable id, need a gene id as input.
+sub get_gene_stable_id{
+    my $gene_id=shift;
+    my @gene_array = ("gene_stable_id", "gene", "gene_id", $gene_id, "true");
+    return my $gene_stable_id = get_data(\@gene_array);
+}
+
+#Returns an array of transcript stable ids, need a gene id as input.
+sub get_transcript_stable_id{
+    my $gene_id = shift;
+    my @transcript_array = ("transcript_stable_id", "transcript", "gene_id", $gene_id, "false");
+    return my @transcript_stable_ids = get_data(\@transcript_array);
+}
+
+#Returns a scalar of the transcript sequence, needs a transcript stable id as input.
+sub get_transcript_seq{
+    my $transcript_stable_id = shift;
+    my @transcript_array = ("transcript_seq", "transcript", "transcript_stable_id", $transcript_stable_id, "true");
+    return my $transcript_seq = get_data(\@transcript_array);
+}
+
+#Returns a scalar of the transcript id, needs a transcript stable id as input.
+sub get_transcript_id{
+    my $transcript_stable_id = shift;
+    my @transcript_array = ("transcript_id", "transcript", "transcript_stable_id", $transcript_stable_id, "true");
+    return my $transcript_id = get_data(\@transcript_array);
+}
+
+#Returns an array of exon ids, needs a transcript id as input.
+sub get_exon_ids{
+    my $transcript_id = shift;
+    my @exon_array = ("exon_id", "transcript_exon", "transcript_id", $transcript_id, "false");
+    return my @exon_ids = get_data(\@exon_array);
+}
+
+#Returns a scalar of the exon start, needs an exon id as input.    
+sub get_exon_start{
+    my $exon_id = shift;
+    my @exon_array = ("exon_start", "exon", "exon_id", $exon_id, "true");
+    return my $exon_start = get_data(\@exon_array);
+}    
+
+#Returns a scalar of the exon end, needs an exon id as input.
+sub get_exon_end{
+    my $exon_id = shift;
+    my @exon_array = ("exon_end", "exon", "exon_id", $exon_id, "true");
+    return my $exon_end = get_data(\@exon_array);
+}
+
+#Returns the scalar or array results from the database query. Needs an array of: column name of the seeked value, table name, condition column name, condition column value, boolean either true or false 
+sub get_data{
+    my @array = @{$_[0]};
+    my $record=$array[0];
+    my $table=$array[1];
+    my $column=$array[2];
+    my $identifier=$array[3];
+    my $boolean=$array[4];
+
+    my $sql=qq{SELECT $record FROM $table WHERE $column = ?};
+    my $get_data=$dbh->prepare($sql);
+       $get_data->bind_param(1, $identifier);
+       $get_data->execute();
+
+    if ($boolean eq "true"){
+        my $data = $get_data->fetchrow_array();
+        return $data;
+    }else{
+        my @output_array=();
+        while (my $data = $get_data->fetchrow_array()){
+            push (@output_array, $data);
+        }
+
+    return @output_array;
+    }   
+}
