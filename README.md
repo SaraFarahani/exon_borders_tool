@@ -7,5 +7,6 @@ This is a tool consisting of three different modules, each with an individual fu
 * insert_gene_families - reads a CSV-file containing gene families and inserts data to a database.
 * write_gene_families - constructs a FASTA formatted text file of gene families containing nucleotide data including the exons' transcript coordinates.
 
-## Requiries  ##
-The import module is dependent on the Ensembl Perl API. The instructions for the installation can be found here : [a link](https://www.ensembl.org/info/docs/api/api_installation.html).  
+## Requirements ##
+The scripts are written in Perl and interacts with a SQLite3 database.
+The import_from_ensembl module is dependent on the Ensembl Perl API, the installation instructions can be found [here](https://www.ensembl.org/info/docs/api/api_installation.html).
