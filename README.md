@@ -12,9 +12,22 @@ The scripts are written in Perl and interacts with a SQLite3 database.
 The import_from_ensembl module is dependent on the Ensembl Perl API, the installation instructions can be found [here](https://www.ensembl.org/info/docs/api/api_installation.html).
 
 
-## Running the modules with line arguments ##
-* import_from_ensembl is called with three arguments. The first two are the database name and the species name. For a testrun, the number of transcripts can be limited by assigning the third argument to an integer. Otherwise the third argument should be 'all'. Example1: perl import_from_ensembl.pl exon_borders.db 10. Example2: perl import_from_ensembl.pl exon_borders.db all.
+## Command line arguments ##
+* import_from_ensembl is called with three arguments. The first two are the database name and the species name. For a testrun, the number of transcripts can be limited by assigning the third argument to an integer. Otherwise the third argument should be 'all'. Examples:
 
-* insert_gene_families is called with the database name and the filename containing the gene families. Example: perl insert_gene_families exon_borders.db newfamilies.txt.
+```
+perl import_from_ensembl.pl exon_borders.db 10
+```
+```
+perl import_from_ensembl.pl exon_borders.db all.
+```
 
-* write_gene_families is called with the database name and an optional number of gene stable ids which should be included in the output file. End the call with an output filename. Example: perl write_gene_families exon_borders.db fam1 fam2 >genefamilies.txt. 
+* insert_gene_families is called with the database name and the filename containing the gene families. Example:
+```
+perl insert_gene_families exon_borders.db newfamilies.txt.
+```
+
+* write_gene_families is called with the database name and an optional number of gene stable ids which should be included in the output file. End the call with an output filename. Example:
+```
+perl write_gene_families exon_borders.db fam1 fam2 >genefamilies.txt.
+```
