@@ -16,10 +16,10 @@ The import_from_ensembl module is dependent on the Ensembl Perl API, the install
 * import_from_ensembl is called with three arguments. The first two are the database name and the species name. For a testrun, the number of transcripts can be limited by assigning the third argument to an integer. Otherwise the third argument should be 'all'. Examples:
 
 ```
-perl import_from_ensembl.pl exon_borders.db 10
+perl import_from_ensembl.pl Human exon_borders.db 10
 ```
 ```
-perl import_from_ensembl.pl exon_borders.db all.
+perl import_from_ensembl.pl Human exon_borders.db all.
 ```
 
 * insert_gene_families is called with the database name and the filename containing the new gene families. Example:
