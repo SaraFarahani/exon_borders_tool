@@ -179,7 +179,7 @@ sub get_coordinates{
     my $new_exon_start = ($previous_exon_end+1);
     my $old_exon_start = $exon->seq_region_start();
     my $old_exon_end = $exon->seq_region_end();
-    my $new_exon_end = $new_exon_start + ($old_exon_end-$old_exon_start) +1;
+    my $new_exon_end = $new_exon_start + ($old_exon_end-$old_exon_start);
     my @coordinates = ($new_exon_start, $new_exon_end);
     return @coordinates;
 }
