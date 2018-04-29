@@ -24,7 +24,7 @@ perl import_from_ensembl.pl exon_borders.db Human all
 
 * insert_gene_families is called with the database name and the filename containing the new gene families. Example:
 ```
-perl insert_gene_families exon_borders.db newfamilies.txt
+perl insert_gene_families exon_borders.db newfamilies.csv
 ```
 
 * write_gene_families is called with the database name and an optional number of family stable ids which should be included in the output file. End the call with an output filename. Example:
