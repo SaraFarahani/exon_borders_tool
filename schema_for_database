@@ -1,0 +1,21 @@
+CREATE TABLE gene_family(gene_id integer not null, family_id integer not null, foreign key(gene_id) references gene(gene_id), 
+foreign key(family_id) references family(family_id) on delete cascade);
+
+CREATE TABLE transcript_exon(transcript_id integer not null, exon_id integer not null, foreign key (transcript_id) references 
+transcript(transcript_id), foreign key (exon_id) references exon(exon_id));
+
+CREATE TABLE family(family_id integer primary key not null, family_stable_id varchar(255) unique, description text);
+
+CREATE TABLE protein(protein_id integer primary key not null, protein_stable_id varchar(255) unique not null, protein_seq text not null);
+
+CREATE TABLE transcript(transcript_id integer primary key not null, gene_id integer not null, protein_id integer not null, 
+transcript_stable_id varchar(255) unique not null, transcript_seq text not null, foreign key (gene_id) references gene(gene_id), 
+foreign key (protein_id) references protein(protein_id));
+
+CREATE TABLE specie (specie_id integer primary key not null, specie_name varchar(255) unique not null);
+
+CREATE TABLE gene(gene_id integer primary key not null, specie_id integer not null, gene_stable_id varchar(255) unique not null, 
+foreign key(specie_id) references specie(specie_id));
+
+CREATE TABLE exon(exon_id integer primary key not null, exon_stable_id varchar(255) not null, exon_start integer not null, 
+exon_end integer not null);
