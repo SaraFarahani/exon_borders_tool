@@ -6,7 +6,7 @@ use Bio::EnsEMBL::Registry;
 
 
 #Command line arguments.
-my ($database, $specie, $nr_transcripts) = @ARGV;
+my ($database, $species, $nr_transcripts) = @ARGV;
 
 #Connect to the SQLite database.
 my $driver   = "SQLite";
@@ -24,7 +24,7 @@ my $registry = 'Bio::EnsEMBL::Registry';
       -user => 'anonymous');
 
 #Retrieves ALL transcripts for the selected species.
-my $transcript_adaptor = $registry->get_adaptor( $specie, 'Core', 'Transcript' );
+my $transcript_adaptor = $registry->get_adaptor( $species, 'Core', 'Transcript' );
 my $transclones_ref = $transcript_adaptor->fetch_all('clone');
 my @transclones = @{$transclones_ref};
 
@@ -50,10 +50,10 @@ main(\@translateable_transcripts);
 #Input: an array of translateable transcript references.
 sub main{
     my @translateables = @{$_[0]};
-    my $last_specie_id = insert_specie($translateables[0]);
+    my $last_species_id = insert_species($translateables[0]);
     
     while (my $transcript = shift @translateables){
-	my $gene_stable_id = insert_gene($transcript, $last_specie_id);
+	my $gene_stable_id = insert_gene($transcript, $last_species_id);
 	my $last_protein_id = insert_protein($transcript);
 	my $last_transcript_id = insert_transcript($transcript, $gene_stable_id, $last_protein_id);
 	insert_exon($transcript, $last_transcript_id);
@@ -61,26 +61,26 @@ sub main{
 }
 
 
-#Inserts data to the specie table. 
+#Inserts data to the species table. 
 #Input: a transcript reference. 
-#Return: a specie id.
-sub insert_specie{
+#Return: a species id.
+sub insert_species{
     my $transcript = shift;
-    my $specie_name = $transcript->species();
-    $dbh->do('INSERT INTO specie(specie_name) VALUES(?)', undef, $specie_name) or die DBI::errstr;
-    my $last_specie_id = $dbh->last_insert_id(undef, 'public', 'specie', 'specie_id');
-    return $last_specie_id;
+    my $species_name = $transcript->species();
+    $dbh->do('INSERT INTO species(species_name) VALUES(?)', undef, $species_name) or die DBI::errstr;
+    my $last_species_id = $dbh->last_insert_id(undef, 'public', 'species', 'species_id');
+    return $last_species_id;
 }
 
 #Inserts data to the gene table. 
-#Input: a transcript reference and a specie id. 
+#Input: a transcript reference and a species id. 
 #Return: a gene stable id.
 sub insert_gene{
     my $transcript = shift;
-    my $last_specie_id = shift;
+    my $last_species_id = shift;
     my $gene = $transcript->get_Gene();
     my $gene_stable_id = $gene->stable_id();
-    $dbh->do('INSERT OR IGNORE INTO gene(specie_id, gene_stable_id) VALUES(?,?)', undef, ($last_specie_id, $gene_stable_id)) or die DBI::errstr;
+    $dbh->do('INSERT OR IGNORE INTO gene(species_id, gene_stable_id) VALUES(?,?)', undef, ($last_species_id, $gene_stable_id)) or die DBI::errstr;
     return $gene_stable_id;	     
 }
 
