@@ -12,7 +12,7 @@ CREATE TABLE transcript(transcript_id integer primary key not null, gene_id inte
 transcript_stable_id varchar(255) unique not null, transcript_seq text not null, foreign key (gene_id) references gene(gene_id), 
 foreign key (protein_id) references protein(protein_id));
 
-CREATE TABLE species (species_id integer primary key not null, specie_name varchar(255) unique not null);
+CREATE TABLE species (species_id integer primary key not null, species_name varchar(255) unique not null);
 
 CREATE TABLE gene(gene_id integer primary key not null, species_id integer not null, gene_stable_id varchar(255) unique not null, 
 foreign key(species_id) references species(species_id));
